@@ -48,10 +48,11 @@ jobs:
           container-name: streamlit
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
 
-      - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-service@v1
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
-          cluster: ${{ env.ECS_CLUSTER }}
-          service: ${{ env.ECS_SERVICE }}
+          cluster: gp-analytics
+          service: streamlit
           task-definition: ${{ steps.render.outputs.task-definition }}
           wait-for-service-stability: true
+
