@@ -1,0 +1,28 @@
+{
+  "family": "streamlit",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/GP-ECS-ExecutionRole",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/GP-ECS-ExecutionRole",
+  "containerDefinitions": [{
+    "name": "streamlit",
+    "image": "123456789012.dkr.ecr.us-west-2.amazonaws.com/streamlit-athena:latest",
+    "essential": true,
+    "portMappings": [{"containerPort": 8501, "protocol": "tcp"}],
+    "environment": [
+      {"name": "AWS_REGION", "value": "us-west-2"},
+      {"name": "ATHENA_WORKGROUP", "value": "primary"},
+      {"name": "ATHENA_S3_STAGING_DIR", "value": "s3://gp-data-project/athena-results/"}
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/streamlit",
+        "awslogs-region": "us-west-2",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }]
+}
