@@ -12,4 +12,5 @@ COPY .streamlit /app/.streamlit
 
 EXPOSE 8501
 ENV PORT=8501
-CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit","run","app.py","--server.address","0.0.0.0","--server.port","8501","--server.headless","true","--server.enableCORS","false","--server.enableXsrfProtection","false"]
+
