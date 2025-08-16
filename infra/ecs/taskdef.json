@@ -4,11 +4,11 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "512",
   "memory": "1024",
-  "executionRoleArn": "arn:aws:iam::123456789012:role/GP-ECS-ExecutionRole",
-  "taskRoleArn": "arn:aws:iam::123456789012:role/GP-ECS-ExecutionRole",
+  "executionRoleArn": "arn:aws:iam::444198539914:role/GP-ECS-ExecutionRole",
+  "taskRoleArn": "arn:aws:iam::444198539914:role/GP-ECS-TaskRole-Analytics",
   "containerDefinitions": [{
     "name": "streamlit",
-    "image": "123456789012.dkr.ecr.us-west-2.amazonaws.com/streamlit-athena:latest",
+    "image": "444198539914.dkr.ecr.us-west-2.amazonaws.com/streamlit-athena:latest",
     "essential": true,
     "portMappings": [{"containerPort": 8501, "protocol": "tcp"}],
     "environment": [
