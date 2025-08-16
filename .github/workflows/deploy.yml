@@ -27,6 +27,9 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::444198539914:role/GitHubOIDCDeployRole   # <- your role
           aws-region: us-west-2
+          
+      - name: Who am I?
+        run: aws sts get-caller-identity
 
       - name: Login to ECR
         id: login-ecr
