@@ -39,12 +39,13 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
-          # build using the Dockerfile in streamlit/, with repo root as context
           docker build -f streamlit/Dockerfile \
             -t $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG} \
-            -t $ECR_REGISTRY/${ECR_REPOSITORY}:latest .
+            -t $ECR_REGISTRY/${ECR_REPOSITORY}:latest \
+          streamlit
           docker push $ECR_REGISTRY/${ECR_REPOSITORY}:${IMAGE_TAG}
           docker push $ECR_REGISTRY/${ECR_REPOSITORY}:latest
+
 
       - name: Render task definition (set new image)
         id: render
