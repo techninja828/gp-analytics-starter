@@ -91,3 +91,30 @@ SELECT
   SUM(revenue_net) / NULLIF(SUM(revenue_gross),0) AS net_to_gross_ratio
 FROM default.gp_analytics_fct_order
 GROUP BY has_discount;
+
+-- 7) Location Retention
+CREATE OR REPLACE VIEW default.gp_v_location_retention AS
+WITH cust AS (
+  SELECT
+    restaurant_id,
+    customer_id,
+    COUNT(*) AS orders_per_cust
+  FROM default.gp_analytics_fct_order
+  GROUP BY restaurant_id, customer_id
+),
+orders AS (
+  SELECT
+    restaurant_id,
+    COUNT(*) AS total_orders,
+    MIN(CAST(order_date AS DATE)) AS first_order_date,
+    MAX(CAST(order_date AS DATE)) AS last_order_date
+  FROM default.gp_analytics_fct_order
+  GROUP BY restaurant_id
+)
+SELECT
+  o.restaurant_id,
+  SUM(CASE WHEN c.orders_per_cust >= 2 THEN 1 ELSE 0 END) * 1.0 / COUNT(*) AS repeat_customer_rate,
+  o.total_orders * 1.0 / (date_diff('week', o.first_order_date, o.last_order_date) + 1) AS orders_per_week
+FROM cust c
+JOIN orders o ON c.restaurant_id = o.restaurant_id
+GROUP BY o.restaurant_id, o.total_orders, o.first_order_date, o.last_order_date;
