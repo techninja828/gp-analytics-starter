@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import streamlit as st
+import altair as alt
 from pyathena import connect
 
 AWS_REGION = os.getenv("AWS_REGION", "us-west-2")
@@ -31,10 +32,33 @@ tabs = st.tabs([
 with tabs[0]:
     st.subheader("Customer Segmentation (latest day)")
     df = run_query("SELECT * FROM default.gp_v_customer_segmentation")
-    st.metric("Customers", len(df))
-    st.bar_chart(df['clv_band'].value_counts())
-    st.bar_chart(df['rfm_segment'].value_counts().sort_index())
-    st.dataframe(df.head(200))
+    st.metric("Customers", int(df["customer_count"].sum()))
+
+    clv_chart = (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(
+            x="clv_band:N",
+            y="sum(customer_count):Q",
+            color="is_loyalty_member:N",
+        )
+        .properties(title="Customers by CLV Band and Loyalty")
+    )
+    st.altair_chart(clv_chart, use_container_width=True)
+
+    rfm_chart = (
+        alt.Chart(df)
+        .mark_bar()
+        .encode(
+            x="rfm_segment:N",
+            y="sum(customer_count):Q",
+            color="is_loyalty_member:N",
+        )
+        .properties(title="Customers by RFM Segment and Loyalty")
+    )
+    st.altair_chart(rfm_chart, use_container_width=True)
+
+    st.dataframe(df)
 
 with tabs[1]:
     st.subheader("Churn Risk (latest day)")
