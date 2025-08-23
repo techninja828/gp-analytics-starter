@@ -1,5 +1,4 @@
 
--- 1) Customer Segmentation (latest day)
 CREATE OR REPLACE VIEW default.gp_v_customer_segmentation AS
 WITH latest AS (
   SELECT max(dt) AS max_dt FROM default.gp_analytics_fct_customer_day
@@ -9,14 +8,24 @@ loy AS (
          MAX(CASE WHEN is_loyalty_member THEN 1 ELSE 0 END) = 1 AS is_loyalty_member
   FROM default.gp_analytics_fct_order
   GROUP BY customer_id
+),
+base AS (
+  SELECT
+    f.customer_id,
+    f.clv_band,
+    f.rfm_segment,
+    COALESCE(l.is_loyalty_member, FALSE) AS is_loyalty_member
+  FROM default.gp_analytics_fct_customer_day f
+  JOIN latest ON f.dt = latest.max_dt
+  LEFT JOIN loy l ON f.customer_id = l.customer_id
 )
 SELECT
-  f.customer_id, f.dt, f.rfm_segment, f.R, f.F, f.M,
-  f.clv_band, f.orders_90d, f.revenue_90d, f.days_since_last_order,
-  COALESCE(l.is_loyalty_member, FALSE) AS is_loyalty_member
-FROM default.gp_analytics_fct_customer_day f
-JOIN latest ON f.dt = latest.max_dt
-LEFT JOIN loy l ON f.customer_id = l.customer_id;
+  clv_band,
+  rfm_segment,
+  is_loyalty_member,
+  COUNT(*) AS customer_count
+FROM base
+GROUP BY clv_band, rfm_segment, is_loyalty_member;
 
 -- 2) Churn Risk Indicators (latest day, 45d rule)
 CREATE OR REPLACE VIEW default.gp_v_churn_indicators AS
