@@ -80,7 +80,20 @@ with tabs[3]:
 
 with tabs[4]:
     st.subheader("Location Performance")
-    df = run_query("SELECT * FROM default.gp_v_location_performance ORDER BY revenue_net DESC")
+    df = run_query(
+        """
+        SELECT p.restaurant_id,
+               p.revenue_net,
+               p.orders,
+               p.aov,
+               r.repeat_customer_rate,
+               r.orders_per_week
+        FROM default.gp_v_location_performance p
+        LEFT JOIN default.gp_v_location_retention r
+          ON p.restaurant_id = r.restaurant_id
+        ORDER BY p.revenue_net DESC
+        """
+    )
     st.dataframe(df)
 
 with tabs[5]:
