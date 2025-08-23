@@ -1,0 +1,14 @@
+{
+  "expectations": [
+    {
+      "expectation_type": "expect_table_columns_to_match_set",
+      "kwargs": {
+        "column_set": [
+          "revenue_gross",
+          "option_net",
+          "revenue_net"
+        ]
+      }
+    }
+  ]
+}
