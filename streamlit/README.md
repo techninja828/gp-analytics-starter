@@ -1,5 +1,16 @@
 # Streamlit + Athena (AWS ECS Fargate)
 
+## Dashboard Tabs
+
+| Tab | Metrics | Requirement |
+| --- | --- | --- |
+| Segmentation | CLV bands and RFM segments by loyalty status | Identify distinct customer segments by purchase behavior and loyalty status |
+| Churn | Days since last order, average interval, spend change % | Highlight customers at risk of churn based on inactivity and spend trends |
+| Sales Trends | Monthly revenue and order volume | Track seasonal sales patterns for planning |
+| Loyalty | Average order value and lifetime value for loyalty members | Compare loyalty members vs non-members to evaluate program effectiveness |
+| Locations | Revenue, AOV, repeat rate, orders per week | Rank restaurant locations and surface top performers |
+| Discounts | Revenue and orders from discounted transactions | Measure discount impact on net sales |
+
 ## Local
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt

@@ -25,12 +25,44 @@ st.set_page_config(page_title="GlobalPartners Analytics", layout="wide")
 st.title("GlobalPartners Analytics")
 st.caption("Athena-backed dashboards")
 
+TAB_METRICS = {
+    "Segmentation": [
+        "Customers by CLV band and loyalty",
+        "Customers by RFM segment and loyalty",
+    ],
+    "Churn": [
+        "Customers flagged by days since last order",
+        "Average days between orders and spend change",
+    ],
+    "Sales Trends": [
+        "Monthly revenue and order volume",
+    ],
+    "Loyalty": [
+        "Average order value and lifetime value for loyalty members",
+    ],
+    "Locations": [
+        "Revenue, AOV, repeat rate, and orders per week by location",
+    ],
+    "Discounts": [
+        "Impact of discounts on revenue and orders",
+    ],
+}
+
+
+def render_metrics(tab_name: str) -> None:
+    """Display a bullet list of metrics for the given tab."""
+    metrics = TAB_METRICS.get(tab_name, [])
+    if metrics:
+        st.markdown("**Metrics**")
+        st.markdown("\n".join(f"- {m}" for m in metrics))
+
 tabs = st.tabs([
     "Segmentation","Churn","Sales Trends","Loyalty","Locations","Discounts"
 ])
 
 with tabs[0]:
     st.subheader("Customer Segmentation (latest day)")
+    render_metrics("Segmentation")
     df = run_query("SELECT * FROM default.gp_v_customer_segmentation")
     st.metric("Customers", int(df["customer_count"].sum()))
 
@@ -62,6 +94,7 @@ with tabs[0]:
 
 with tabs[1]:
     st.subheader("Churn Risk (latest day)")
+    render_metrics("Churn")
     df = run_query("SELECT * FROM default.gp_v_churn_indicators")
     risky = df[df["at_risk"]]
     st.metric("At risk (>=45d)", len(risky))
@@ -96,17 +129,20 @@ with tabs[1]:
 
 with tabs[2]:
     st.subheader("Sales Trends (monthly)")
+    render_metrics("Sales Trends")
     df = run_query("SELECT * FROM default.gp_v_sales_trends_monthly ORDER BY month")
     st.line_chart(df.set_index('month')[['revenue_net','orders']])
     st.dataframe(df.tail(24))
 
 with tabs[3]:
     st.subheader("Loyalty Impact")
+    render_metrics("Loyalty")
     df = run_query("SELECT * FROM default.gp_v_loyalty_impact")
     st.dataframe(df)
 
 with tabs[4]:
     st.subheader("Location Performance")
+    render_metrics("Locations")
     df = run_query(
         """
         SELECT p.restaurant_id,
@@ -125,5 +161,6 @@ with tabs[4]:
 
 with tabs[5]:
     st.subheader("Pricing & Discount Effectiveness")
+    render_metrics("Discounts")
     df = run_query("SELECT * FROM default.gp_v_discount_effectiveness")
     st.dataframe(df)
