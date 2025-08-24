@@ -63,9 +63,36 @@ with tabs[0]:
 with tabs[1]:
     st.subheader("Churn Risk (latest day)")
     df = run_query("SELECT * FROM default.gp_v_churn_indicators")
-    risky = df[df['at_risk'] == True]
+    risky = df[df["at_risk"]]
     st.metric("At risk (>=45d)", len(risky))
-    st.dataframe(risky.head(200))
+
+    def days_style(val):
+        if pd.isna(val):
+            return ""
+        if val > 30:
+            return "background-color: #ffcccc"
+        if val > 15:
+            return "background-color: #fff0b3"
+        return ""
+
+    def spend_style(val):
+        if pd.isna(val):
+            return ""
+        if val < -0.5:
+            return "background-color: #ffcccc"
+        if val < -0.2:
+            return "background-color: #fff0b3"
+        return ""
+
+    styled = (
+        risky.head(200)
+        .style.format(
+            {"spend_change_pct": "{:.1%}", "avg_days_between_orders": "{:.1f}"}
+        )
+        .applymap(days_style, subset=["avg_days_between_orders"])
+        .applymap(spend_style, subset=["spend_change_pct"])
+    )
+    st.dataframe(styled)
 
 with tabs[2]:
     st.subheader("Sales Trends (monthly)")
