@@ -31,13 +31,41 @@ GROUP BY clv_band, rfm_segment, is_loyalty_member;
 CREATE OR REPLACE VIEW default.gp_v_churn_indicators AS
 WITH latest AS (
   SELECT max(dt) AS max_dt FROM default.gp_analytics_fct_customer_day
+),
+base AS (
+  SELECT customer_id, dt, days_since_last_order,
+         orders_30d, revenue_30d, orders_90d, revenue_90d
+  FROM default.gp_analytics_fct_customer_day
+  WHERE dt = (SELECT max_dt FROM latest)
+),
+prev30 AS (
+  SELECT customer_id, revenue_30d AS revenue_30d_prev
+  FROM default.gp_analytics_fct_customer_day
+  WHERE dt = (SELECT date_add('day', -30, max_dt) FROM latest)
+),
+avg_days AS (
+  SELECT customer_id,
+         AVG(date_diff('day', prev_order_date, order_date)) AS avg_days_between_orders
+  FROM (
+    SELECT customer_id,
+           CAST(order_date AS DATE) AS order_date,
+           lag(CAST(order_date AS DATE)) OVER (
+             PARTITION BY customer_id ORDER BY CAST(order_date AS DATE)
+           ) AS prev_order_date
+    FROM default.gp_analytics_fct_order
+  )
+  WHERE prev_order_date IS NOT NULL
+  GROUP BY customer_id
 )
 SELECT
-  f.customer_id, f.dt, f.days_since_last_order,
-  f.orders_30d, f.revenue_30d, f.orders_90d, f.revenue_90d,
-  (f.days_since_last_order >= 45) AS at_risk
-FROM default.gp_analytics_fct_customer_day f
-JOIN latest ON f.dt = latest.max_dt;
+  b.customer_id, b.dt, b.days_since_last_order,
+  b.orders_30d, b.revenue_30d, b.orders_90d, b.revenue_90d,
+  (b.days_since_last_order >= 45) AS at_risk,
+  a.avg_days_between_orders,
+  (b.revenue_30d - p.revenue_30d_prev) / NULLIF(p.revenue_30d_prev, 0) AS spend_change_pct
+FROM base b
+LEFT JOIN prev30 p ON b.customer_id = p.customer_id
+LEFT JOIN avg_days a ON b.customer_id = a.customer_id;
 
 -- 3) Sales Trends & Seasonality (monthly)
 CREATE OR REPLACE VIEW default.gp_v_sales_trends_monthly AS
